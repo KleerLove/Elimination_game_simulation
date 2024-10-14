@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八强淘汰赛模拟</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            color: #333;
+        }
+        #formula {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #formula p {
+            text-align: center;
+            font-size: 1.1em;
+            color: #555;
+        }
+        #teams {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .team {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .match {
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .match-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .score {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .win-rate {
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>八强淘汰赛模拟</h1>
+
+        <div id="formula">
+            <h2>胜率计算公式</h2>
+            <p>对于每一场比赛，战队A的胜率 = 
+            <strong>(战力A<sup>6</sup>) / (战力A<sup>6</sup> + 战力B<sup>6</sup>)</strong></p>
+            <p>战队B的胜率 = 1 - 战队A的胜率</p>
+        </div>
+
+        <h2>设置战队战力</h2>
+        <div id="teams">
+            <div class="team">LNG: <input type="number" id="LNG" value="100"></div>
+            <div class="team">WBG: <input type="number" id="WBG" value="90"></div>
+            <div class="team">HLE: <input type="number" id="HLE" value="85"></div>
+            <div class="team">BLG: <input type="number" id="BLG" value="95"></div>
+            <div class="team">TES: <input type="number" id="TES" value="92"></div>
+            <div class="team">T1: <input type="number" id="T1" value="98"></div>
+            <div class="team">GENG: <input type="number" id="GENG" value="99"></div>
+            <div class="team">FLY: <input type="number" id="FLY" value="80"></div>
+        </div>
+
+        <button onclick="simulate()">开始模拟</button>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function getWinRate(n, m) {
+            const n6 = Math.pow(n, 6);
+            const m6 = Math.pow(m, 6);
+            return n6 / (n6 + m6);
+        }
+
+        function bo5(n, m) {
+            let winsA = 0, winsB = 0;
+            const winRateA = getWinRate(n, m);
+            const winRateB = 1 - winRateA;
+            const score = { winsA: 0, winsB: 0 };
+
+            while (score.winsA < 3 && score.winsB < 3) {
+                const rnd = Math.random();
+                if (rnd < winRateA) {
+                    score.winsA++;
+                } else {
+                    score.winsB++;
+                }
+            }
+            return score;
+        }
+
+        function simulateMatch(teamA, teamB, powerA, powerB) {
+            const winRateA = getWinRate(powerA, powerB);
+            const winRateB = 1 - winRateA;
+            const score = bo5(powerA, powerB);
+            const winner = score.winsA === 3 ? teamA : teamB;
+
+            return {
+                winner,
+                score,
+                winRateA: (winRateA * 100).toFixed(2),
+                winRateB: (winRateB * 100).toFixed(2)
+            };
+        }
+
+        function simulate() {
+            const teams = [
+                { name: 'LNG', power: parseInt(document.getElementById('LNG').value) },
+                { name: 'WBG', power: parseInt(document.getElementById('WBG').value) },
+                { name: 'HLE', power: parseInt(document.getElementById('HLE').value) },
+                { name: 'BLG', power: parseInt(document.getElementById('BLG').value) },
+                { name: 'TES', power: parseInt(document.getElementById('TES').value) },
+                { name: 'T1', power: parseInt(document.getElementById('T1').value) },
+                { name: 'GENG', power: parseInt(document.getElementById('GENG').value) },
+                { name: 'FLY', power: parseInt(document.getElementById('FLY').value) }
+            ];
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+
+            // Quarterfinals
+            const qfWinners = [];
+            qfWinners.push(simulateMatch(teams[0].name, teams[1].name, teams[0].power, teams[1].power));
+            qfWinners.push(simulateMatch(teams[2].name, teams[3].name, teams[2].power, teams[3].power));
+            qfWinners.push(simulateMatch(teams[4].name, teams[5].name, teams[4].power, teams[5].power));
+            qfWinners.push(simulateMatch(teams[6].name, teams[7].name, teams[6].power, teams[7].power));
+
+            resultDiv.innerHTML += '<h3>四分之一决赛</h3>';
+            qfWinners.forEach((match, index) => {
+                resultDiv.innerHTML += `<div class="match">
+                    <div class="match-title">${teams[index * 2].name} vs ${teams[index * 2 + 1].name}</div>
+                    <div class="win-rate">胜率: ${match.winRateA}% vs ${match.winRateB}%</div>
+                    <div class="score">得分: ${match.score.winsA} - ${match.score.winsB}</div>
+                    胜者: ${match.winner}
+                </div>`;
+            });
+
+            // Semifinals
+            const sfWinners = [];
+            sfWinners.push(simulateMatch(qfWinners[0].winner, qfWinners[1].winner, teams.find(t => t.name === qfWinners[0].winner).power, teams.find(t => t.name === qfWinners[1].winner).power));
+            sfWinners.push(simulateMatch(qfWinners[2].winner, qfWinners[3].winner, teams.find(t => t.name === qfWinners[2].winner).power, teams.find(t => t.name === qfWinners[3].winner).power));
+
+            resultDiv.innerHTML += '<h3>半决赛</h3>';
+            sfWinners.forEach((match, index) => {
+                resultDiv.innerHTML += `<div class="match">
+                    <div class="match-title">${qfWinners[index * 2].winner} vs ${qfWinners[index * 2 + 1].winner}</div>
+                    <div class="win-rate">胜率: ${match.winRateA}% vs ${match.winRateB}%</div>
+                    <div class="score">得分: ${match.score.winsA} - ${match.score.winsB}</div>
+                    胜者: ${match.winner}
+                </div>`;
+            });
+
+            // Final
+            const champion = simulateMatch(sfWinners[0].winner, sfWinners[1].winner, teams.find(t => t.name === sfWinners[0].winner).power, teams.find(t => t.name === sfWinners[1].winner).power);
+
+            resultDiv.innerHTML += '<h3>决赛</h3>';
+            resultDiv.innerHTML += `<div class="match">
+                <div class="match-title">${sfWinners[0].winner} vs ${sfWinners[1].winner}</div>
+                <div class="win-rate">胜率: ${champion.winRateA}% vs ${champion.winRateB}%</div>
+                <div class="score">得分: ${champion.score.winsA} - ${champion.score.winsB}</div>
+                冠军: ${champion.winner}
+            </div>`;
+        }
+    </script>
+</body>
+</html>
